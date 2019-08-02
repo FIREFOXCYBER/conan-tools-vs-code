@@ -98,7 +98,7 @@
         "vscode": "^1.1.36"
     },
     "repository": {
-        "url": "https://github.com/kaushiksanthanam/conan-tools-vs-code.git"
+        "url": "https://github.com/FIREFOXCYBER/conan-tools-vs-code.git"
     },
     "icon": "resources/media/extension.ico"
 }
