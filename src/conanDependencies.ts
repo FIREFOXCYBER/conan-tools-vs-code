@@ -91,7 +91,7 @@ export class ConanDependenciesProvider implements vscode.TreeDataProvider<ConanD
                     let parentLabel = split[0];
                     parentLabel = parentLabel.replace("\"", "").trim();
                     parentLabel = parentLabel.replace(/"/g, '');
-                    if (parentLabel.includes('@PROJECT')) {
+                    if (parentLabel.includes('@PROJECT') || parentLabel.includes('conanfile.py')) {
                         parentLabel = 'ROOT';
                     }
                     
