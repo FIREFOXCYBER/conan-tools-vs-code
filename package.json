@@ -3,9 +3,9 @@
     "displayName": "conan-tools",
     "description": "VS Code extension for conan tools",
     "version": "0.1.0",
-    "publisher": "FireBlackHat",
+    "publisher": "disroop",
     "engines": {
-        "vscode": "^1.26.0"
+        "vscode": "1.46.1"
     },
     "categories": [
         "Other"
@@ -39,6 +39,10 @@
                     "light": "resources/light/build.png",
                     "dark": "resources/dark/build.png"
                 }
+            },
+            {
+                "command": "conan.changeprofile",
+                "title": "Change Profile"
             }
         ],
         "menus": {
@@ -79,6 +83,11 @@
                     ],
                     "default": "conan build ..",
                     "description": "Custom conan build command for the workspace"
+                },
+                "conan.profiles": {
+                    "type":"array",
+                    "default": [],
+                    "description": "Set your profiles"
                 }
             }
         }

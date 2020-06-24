@@ -2,16 +2,18 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { exec } from 'child_process';
 
-let conanToolsFolderPath: string | undefined;
-let conanToolsInfoFilePath: string;
-
 export class ConanDependenciesProvider implements vscode.TreeDataProvider<ConanDependency>
 {
 
     private _onDidChangeTreeData: vscode.EventEmitter<ConanDependency | undefined> = new vscode.EventEmitter<ConanDependency | undefined>();
-    readonly onDidChangeTreeData?: vscode.Event<ConanDependency | undefined | null> = this._onDidChangeTreeData.event;
-
-
+    readonly onDidChangeTreeData: vscode.Event<ConanDependency | undefined> = this._onDidChangeTreeData.event;
+    conanToolsFolderPath: string;
+    conanToolsInfoFilePath: string;
+    
+    
+    setProfile(profile: string){
+        this.profile = profile
+    }
     getTreeItem(element: ConanDependency): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
@@ -48,28 +50,26 @@ export class ConanDependenciesProvider implements vscode.TreeDataProvider<ConanD
         this._onDidChangeTreeData.fire();
     }
 
-    constructor(private workspace: string | undefined, private dependencies: Map<string, string[]> = new Map()) {
+    constructor(private workspace: string | undefined, private profile: string | undefined, private dependencies: Map<string, string[]> = new Map()) {
 
-        conanToolsFolderPath = workspace + '/.vscode/.conan_tools';
-        conanToolsInfoFilePath = conanToolsFolderPath + '/conanInfo.dot';
-        if(fs.existsSync(conanToolsInfoFilePath)) {
-            this.readConanInfo();
-
-        } else {
-            this.createConanInfo();
-        }
+        this.conanToolsFolderPath = workspace + '/.vscode/.conan_tools';
+        this.conanToolsInfoFilePath = this.conanToolsFolderPath + '/conanInfo.dot';
+        this.createConanInfo()
     }
 
     createConanInfo() {
-        let command = 'conan info ' + this.workspace + '/ --g=' + conanToolsInfoFilePath;
+        let command = 'conan info ' + this.workspace + '/ -g ' + this.conanToolsInfoFilePath;
+        if(this.profile){
+            command = command+' -pr ' + this.profile;
+        }
         exec(command, (err, stdout, stderr) => {
             if (err) {
                 vscode.window.showErrorMessage('Failed to grab conan information');
-                exec('conan install .', { cwd: this.workspace, maxBuffer: 1024 * 2000 }, (err, stdout, stderr) => {
+                exec('conan install .', { cwd: this.workspace, maxBuffer: 1024 * 4000 }, (err, stdout, stderr) => {
                     vscode.window.showErrorMessage('Conan Tools: Failed to get conan info');
-                    fs.writeFileSync(conanToolsFolderPath + '/info.log', stdout.toString());
+                    fs.writeFileSync(this.conanToolsFolderPath + '/info.log', stdout.toString());
 
-                    let infoLogUri = vscode.Uri.file(conanToolsFolderPath + '/info.log');
+                    let infoLogUri = vscode.Uri.file(this.conanToolsFolderPath + '/info.log');
                     vscode.window.showTextDocument(infoLogUri);
                 });
             }
@@ -80,10 +80,10 @@ export class ConanDependenciesProvider implements vscode.TreeDataProvider<ConanD
     }
 
     readConanInfo() {
-        let dataBuffer = fs.readFileSync(conanToolsInfoFilePath);
+        let dataBuffer = fs.readFileSync(this.conanToolsInfoFilePath);
         let fileContents = dataBuffer.toString();
         let lines = fileContents.split('\n');
-
+        this.dependencies.clear();
         lines.forEach(line => {
             if (!(line.startsWith("}")) && !(line.startsWith('digraph'))) {
                 let split = line.split("->");
@@ -96,6 +96,9 @@ export class ConanDependenciesProvider implements vscode.TreeDataProvider<ConanD
                     }
                     
                     let childrenConan: string[] = [];
+                    let rootchildren = this.dependencies.get(parentLabel);
+                    if(rootchildren)
+                        childrenConan = rootchildren
                     let children = split[1];
                     if(children) {
                         children = children.replace('{', '');
