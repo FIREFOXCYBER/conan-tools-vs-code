@@ -2,8 +2,10 @@
     "name": "conan-tools",
     "displayName": "conan-tools",
     "description": "VS Code extension for conan tools",
-    "version": "0.1.0",
-    "publisher": "disroop",
+    "version": "0.1.1",
+    "publisher": "mymichu",
+    "preview": true,
+    "keywords": ["conan", "cpp"],
     "engines": {
         "vscode": "1.46.1"
     },
@@ -107,7 +109,7 @@
         "vscode": "^1.1.36"
     },
     "repository": {
-        "url": "https://github.com/FIREFOXCYBER/conan-tools-vs-code.git"
+        "url": "https://github.com/mymichu/conan-tools-vs-code"
     },
     "icon": "resources/media/extension.ico"
 }
